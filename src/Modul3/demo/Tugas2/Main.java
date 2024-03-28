@@ -1,141 +1,161 @@
 package Modul3.demo.Tugas2;
 
 import java.util.Scanner;
+import java.util.Random;
 
 class Tiket {
-    String nama;
-    int jumlahTiket;
-    int nomorPemesanan;
+    private int noPemesanan;
+    private int idTiket;
+    private String nama;
+    private int banyakTiket;
 
-    Tiket(String nama, int jumlahTiket, int nomorPemesanan) {
+    public Tiket(String nama, int banyakTiket, int noPemesanan) {
+        this.idTiket = generateTicketId();
         this.nama = nama;
-        this.jumlahTiket = jumlahTiket;
-        this.nomorPemesanan = nomorPemesanan;
+        this.banyakTiket = banyakTiket;
+        this.noPemesanan = noPemesanan;
     }
 
+    private int generateTicketId() {
+        Random random = new Random();
+        return random.nextInt(1000); // Menghasilkan nomor tiket dengan 3 digit integer secara acak
+    }
+
+    public int getNoPemesanan() {
+        return noPemesanan;
+    }
+
+    public int getIdTiket() {
+        return idTiket;
+    }
+
+    public String getNama() {
+        return nama;
+    }
+
+    public int getBanyakTiket() {
+        return banyakTiket;
+    }
+
+    @Override
     public String toString() {
-        return "Nomor Pemesanan: " + nomorPemesanan + ", Nama Pemesan: " + nama + ", Jumlah Tiket: " + jumlahTiket;
+        return "ID tiket : "+ idTiket +", Nomor pemesanan : " + noPemesanan + ", Nama : " + nama + ", Banyak tiket : " + banyakTiket;
     }
 }
 
 class Queue {
-    public Tiket[] queueArray;
-    private int maxSize;
+    private static final int maxSize = 100;
+    private Tiket[] queueArray;
     private int front;
     private int rear;
-    public int nItems;
+    private int nItem;
 
-    public Queue(int size) {
-        maxSize = size;
+    public Queue() {
         queueArray = new Tiket[maxSize];
         front = 0;
         rear = -1;
-        nItems = 0;
+        nItem = 0;
     }
 
-    public void insert(String namaPemesan, int jumlahTiket, int nomorPemesanan) {
-        if (rear == maxSize - 1) // Jika rear telah mencapai batas maksimum
-            rear = -1; // Kembali ke awal array
-        queueArray[++rear] = new Tiket(namaPemesan, jumlahTiket, nomorPemesanan);
-        nItems++;
+    public void enqueue(Tiket tiket) {
+        if (nItem == maxSize) {
+            System.out.println("Antrian sudah penuh, tidak bisa menambahkan pesanan baru.");
+            return;
+        }
+        rear = (rear + 1) % maxSize;
+        queueArray[rear] = tiket;
+        nItem++;
+        System.out.println("Tiket berhasil dipesan: " + tiket);
     }
 
-    public Tiket remove() {
-        Tiket temp = queueArray[front++];
-        if (front == maxSize) // Jika front mencapai batas maksimum
-            front = 0; // Kembali ke awal array
-        nItems--;
-        return temp;
+    public Tiket dequeue(int ticketId) {
+        if (isEmpty()) {
+            System.out.println("Antrian kosong, tidak ada yang bisa dibatalkan.");
+            return null;
+        }
+        int index = front;
+        while (queueArray[index].getIdTiket() != ticketId) {
+            index = (index + 1) % maxSize;
+            if (index == rear) {
+                System.out.println("Id tiket tidak ditemukan.");
+                return null;
+            }
+        }
+        Tiket removedTiket = queueArray[index];
+        for (int i = index; i != rear; i = (i + 1) % maxSize) {
+            queueArray[i] = queueArray[(i + 1) % maxSize];
+        }
+        rear = (rear - 1 + maxSize) % maxSize;
+        nItem--;
+        return removedTiket;
+    }
+
+    public void display() {
+        System.out.println("Daftar Pemesanan Tiket:");
+        if (isEmpty()) {
+            System.out.println("Antrian kosong.");
+            return;
+        }
+        int count = 0;
+        int index = front;
+        while (count < nItem) {
+            System.out.println(queueArray[index]);
+            index = (index + 1) % maxSize;
+            count++;
+        }
     }
 
     public boolean isEmpty() {
-        boolean isTrue = false;
-        if (nItems == 0){
-            isTrue = true;
-        }
-        return isTrue;
-    }
-
-    public boolean isFull() {
-        boolean isTrue = false;
-        if (nItems == maxSize){
-            isTrue = true;
-        }
-        return isTrue;
-    }
-
-    public void Display(){
-        int i = front;
-
-        while (true){
-            while (i != rear){
-                System.out.println(queueArray[i]);
-                if (i == maxSize-1){
-                    i = 0;
-                }else {
-                    i++;
-                }
-
-            }
-
-        }
+        return nItem == 0;
     }
 }
 
 public class Main {
     public static void main(String[] args) {
+        Queue bookingQueue = new Queue();
         Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Masukkan kapasitas antrian: ");
-        int maxSize = scanner.nextInt();
-        Queue queue = new Queue(maxSize);
-
-        int nomorPemesanan = 1;
-
+        int nomorPesanan = 1;
         while (true) {
-            System.out.println("\nPilih menu:");
-            System.out.println("1. Pesan tiket");
-            System.out.println("2. Lihat antrian");
-            System.out.println("3. Hapus pemesanan");
+            System.out.println("\nMenu:");
+            System.out.println("1. Pesan Tiket");
+            System.out.println("2. Lihat Pemesanan");
+            System.out.println("3. Batalkan Pemesanan");
             System.out.println("4. Keluar");
-            System.out.print("Pilihan Anda: ");
+            System.out.print("Pilih opsi: ");
             int choice = scanner.nextInt();
+
+
 
             switch (choice) {
                 case 1:
-                    if (queue.isFull()) {
-                        System.out.println("Antrian sudah penuh!");
-                    } else {
-                        scanner.nextLine(); // Membersihkan buffer
-                        System.out.print("Masukkan nama pemesan: ");
-                        String namaPemesan = scanner.nextLine();
-                        System.out.print("Masukkan jumlah tiket: ");
-                        int jumlahTiket = scanner.nextInt();
-
-                        queue.insert(namaPemesan, jumlahTiket, nomorPemesanan++);
-                        System.out.println("Pemesanan berhasil ditambahkan.");
-                    }
+                    System.out.print("Masukkan nama pemesan: ");
+                    String name = scanner.next();
+                    System.out.print("Masukkan jumlah tiket: ");
+                    int quantity = scanner.nextInt();
+                    bookingQueue.enqueue(new Tiket(name, quantity,nomorPesanan++));
                     break;
                 case 2:
-                    if (queue.isEmpty()) {
-                        System.out.println("Antrian kosong.");
-                    } else {
-                        queue.Display();
-                    }
+                    bookingQueue.display();
                     break;
                 case 3:
-                    if (queue.isEmpty()) {
-                        System.out.println("Antrian kosong.");
+                    if (!bookingQueue.isEmpty()) {
+                        System.out.print("Masukkan ID tiket yang ingin dibatalkan: ");
+                        int ticketId = scanner.nextInt();
+                        Tiket canceledTiket = bookingQueue.dequeue(ticketId);
+                        if (canceledTiket != null) {
+                            System.out.println("Pemesanan tiket dibatalkan: " + canceledTiket);
+                        }
                     } else {
-                        Tiket removedTiket = queue.remove();
-                        System.out.println("Pemesanan dengan nomor " + removedTiket.nomorPemesanan + " telah dihapus.");
+                        System.out.println("Antrian kosong, tidak ada yang bisa dibatalkan.");
                     }
                     break;
                 case 4:
                     System.out.println("Terima kasih!");
+                    scanner.close();
                     System.exit(0);
+                    break;
                 default:
-                    System.out.println("Pilihan tidak valid.");
+                    System.out.println("Pilihan tidak valid!");
             }
         }
     }

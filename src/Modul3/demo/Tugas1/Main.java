@@ -1,102 +1,167 @@
 package Modul3.demo.Tugas1;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 class MyStack {
-    private ArrayList<String> historyURL;
-    private int currIdx;
+    private String[] data;
+    private int top;
+    private int size;
 
-    public MyStack() {
-        historyURL = new ArrayList<>();
-        currIdx = -1;
+    public MyStack(int size) {
+        this.size = size;
+        data = new String[size];
+        top = -1;
     }
 
-    public void enterURL(String url) {
-        historyURL.subList(currIdx + 1, historyURL.size()).clear(); // Menghapus riwayat setelah URL saat ini
-        historyURL.add(url);
-        currIdx++;
-        System.out.println("\nMasuk ke URL: " + url);
-    }
-
-
-
-    public void maju() {
-        if (currIdx < historyURL.size() - 1) {
-            currIdx++;
-            System.out.println("\nMaju ke URL : " + historyURL.get(currIdx));
+    public void push(String newData) {
+        if (!isFull()) {
+            data[++top] = newData;
         } else {
-            System.out.println("\nTidak ada URL yang bisa dimajukan lagi");
+            System.out.println("Stack sudah mencapai batas maksimum.");
         }
     }
 
-    public void mundur() {
-        if (currIdx > 0) {
-            currIdx--;
-            System.out.println("\nKembali ke URL : " + historyURL.get(currIdx));
+    public String pop() {
+        if (!isEmpty()) {
+            return data[top--];
         } else {
-            System.out.println("\nTidak ada URL yang bisa dimundurkan lagi");
+            return null;
         }
     }
 
-    public String displayURL() {
-        if (currIdx >= 0 && currIdx < historyURL.size()) {
-            return historyURL.get(currIdx);
+    public String peek() {
+        if (!isEmpty()) {
+            return data[top];
         } else {
-            return "\nNo URL currently accessed";
+            return null;
         }
+    }
+
+    public boolean isEmpty() {
+        return top == -1;
+    }
+
+    public boolean isFull() {
+        return top == size - 1;
+    }
+
+    public void reset() {
+        top = -1;
+    }
+
+    public int getTop() {
+        return top;
+    }
+}
+
+class BrowserHistory {
+    public MyStack pastStack;
+    private MyStack futureStack;
+    private int maxSize;
+
+    public BrowserHistory() {
+        maxSize = 10;
+        pastStack = new MyStack(maxSize);
+        futureStack = new MyStack(maxSize);
+    }
+
+    public void visitURL(String url) {
+        pastStack.push(url);
+        futureStack.reset();
+        adjustStackSize();
+    }
+
+    private void adjustStackSize() {
+        if (pastStack.getTop() == maxSize - 1) {
+            maxSize *= 2;
+            MyStack newHistoryStack = new MyStack(maxSize);
+            while (!pastStack.isEmpty()) {
+                newHistoryStack.push(pastStack.pop());
+            }
+            pastStack = newHistoryStack;
+        }
+    }
+
+    public String kembali() {
+        String currentURL = pastStack.pop();
+        if (currentURL != null) {
+            futureStack.push(currentURL);
+            return currentURL;
+        } else {
+            return "Tidak ada URL sebelumnya dalam riwayat";
+        }
+    }
+
+    public String maju() {
+        String forwardURL = futureStack.pop();
+        if (forwardURL != null) {
+            pastStack.push(forwardURL);
+            return forwardURL;
+        } else {
+            return "Tidak ada URL berikutnya dalam riwayat";
+        }
+    }
+
+    public String getCurrentURL() {
+        return pastStack.isEmpty() ? "Riwayat URL kosong" : pastStack.peek();
     }
 }
 
 public class Main {
     public static void main(String[] args) {
-        MyStack myStack = new MyStack();
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("=============================");
+        System.out.println("\t\tWandering Sea");
+        System.out.println("=============================");
+        System.out.println("Multiversal Search Engine");
+        System.out.println("Powered by Terra Brain");
+        System.out.println("=============================");
+        BrowserHistory browser = new BrowserHistory();
 
-
+        int pilihan = 0;
         boolean isRunning = true;
-        try {
-            while (isRunning) {
-                System.out.println("\n=======================");
-                System.out.println("\tTerra Brain WEB");
-                System.out.println("=======================");
-                System.out.println("1. Masukkan URL");
-                System.out.println("2. Maju");
-                System.out.println("3. Mundur");
-                System.out.println("4. Display URL");
-                System.out.println("0. Exit");
-                System.out.println("=====================");
-                System.out.println("Pilih salah satu");
-                System.out.println("=====================");
+        while (isRunning) {
+            System.out.println("Menu:");
+            System.out.println("1. Kunjungi URL");
+            System.out.println("2. Kembali");
+            System.out.println("3. Maju");
+            System.out.println("4. Tampilkan URL Saat Ini");
+            System.out.println("5. Clear browser history");
+            System.out.println("0. Keluar");
 
-                int pilihan = sc.nextInt();
-                switch (pilihan) {
-                    case 1:
-                        System.out.println("Masukkan URL yang diinginkan : ");
-                        String URL = sc.next();
-                        myStack.enterURL(URL);
-                        break;
-                    case 2:
-                        myStack.maju();
-                        break;
-                    case 3:
-                        myStack.mundur();
-                        break;
-                    case 4:
-                        System.out.println("\nURL Sekarang: " + myStack.displayURL());
-                        break;
-                    case 0:
-                        isRunning = false;
-                        break;
-                    default:
-                        System.out.println("Input salah");
-                        break;
-                }
+            System.out.print("Pilihan Anda: ");
+            pilihan = scanner.nextInt();
+
+            switch (pilihan) {
+                case 1:
+                    scanner.nextLine();
+                    System.out.print("Masukkan URL: ");
+                    String url = scanner.nextLine();
+                    browser.visitURL(url);
+                    System.out.println("Anda mengunjungi URL: " + url);
+                    break;
+                case 2:
+                    System.out.println("Anda kembali ke URL: " + browser.kembali());
+                    break;
+                case 3:
+                    System.out.println("Anda maju ke URL: " + browser.maju());
+                    break;
+                case 4:
+                    System.out.println("URL Saat Ini: " + browser.getCurrentURL());
+                    break;
+                case 5:
+                    browser.pastStack.reset();
+                    System.out.println("History berhasil direset");
+                    break;
+                case 0:
+                    System.out.println("Terima kasih!");
+                    isRunning=false;
+                    break;
+                default:
+                    System.out.println("Pilihan tidak valid. Silakan pilih lagi.");
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
 
+        scanner.close();
     }
 }
-
