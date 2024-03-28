@@ -18,7 +18,7 @@ class Tiket {
 
     private int generateTicketId() {
         Random random = new Random();
-        return random.nextInt(1000); // Menghasilkan nomor tiket dengan 3 digit integer secara acak
+        return random.nextInt(1000);
     }
 
     public int getNoPemesanan() {
@@ -44,7 +44,7 @@ class Tiket {
 }
 
 class Queue {
-    private static final int maxSize = 100;
+    private static final int maxSize = 10;
     private Tiket[] queueArray;
     private int front;
     private int rear;
@@ -58,11 +58,11 @@ class Queue {
     }
 
     public void enqueue(Tiket tiket) {
-        if (nItem == maxSize) {
+        if (nItem == maxSize-1) {
             System.out.println("Antrian sudah penuh, tidak bisa menambahkan pesanan baru.");
             return;
         }
-        rear = (rear + 1) % maxSize;
+        rear = rear + 1;
         queueArray[rear] = tiket;
         nItem++;
         System.out.println("Tiket berhasil dipesan: " + tiket);
@@ -113,25 +113,28 @@ class Queue {
 public class Main {
     public static void main(String[] args) {
         Queue bookingQueue = new Queue();
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         int nomorPesanan = 1;
         while (true) {
-            System.out.println("\nMenu:");
+            System.out.println("======================");
+            System.out.println("\tAstral Express");
+            System.out.println("======================");
+            System.out.println("Menu:");
             System.out.println("1. Pesan Tiket");
             System.out.println("2. Lihat Pemesanan");
             System.out.println("3. Batalkan Pemesanan");
-            System.out.println("4. Keluar");
+            System.out.println("0. Keluar");
             System.out.print("Pilih opsi: ");
-            int choice = scanner.nextInt();
+            int choice = sc.nextInt();
 
 
 
             switch (choice) {
                 case 1:
                     System.out.print("Masukkan nama pemesan: ");
-                    String name = scanner.next();
+                    String name = sc.next();
                     System.out.print("Masukkan jumlah tiket: ");
-                    int quantity = scanner.nextInt();
+                    int quantity = sc.nextInt();
                     bookingQueue.enqueue(new Tiket(name, quantity,nomorPesanan++));
                     break;
                 case 2:
@@ -140,18 +143,18 @@ public class Main {
                 case 3:
                     if (!bookingQueue.isEmpty()) {
                         System.out.print("Masukkan ID tiket yang ingin dibatalkan: ");
-                        int ticketId = scanner.nextInt();
+                        int ticketId = sc.nextInt();
                         Tiket canceledTiket = bookingQueue.dequeue(ticketId);
                         if (canceledTiket != null) {
                             System.out.println("Pemesanan tiket dibatalkan: " + canceledTiket);
                         }
                     } else {
-                        System.out.println("Antrian kosong, tidak ada yang bisa dibatalkan.");
+                        System.out.println("Antrian masih kosong, tidak ada yang bisa dibatalkan.");
                     }
                     break;
-                case 4:
+                case 0:
                     System.out.println("Terima kasih!");
-                    scanner.close();
+                    sc.close();
                     System.exit(0);
                     break;
                 default:
